@@ -49,5 +49,35 @@ def delete_post(id):
     return jsonify({"message": f"Post with id {deleted_post['id']} has been deleted!"}), 200
 
 
+@app.route('/api/posts/<int:id>', methods=['PUT'])
+def update_post(id):
+    post = next((post for post in POSTS if post['id'] == id), None)
+    if not post:
+        abort(404)  # Not found - post with given id doesn't exist
+
+    if not request.json:
+        abort(400)  # Bad request - empty body
+
+    new_title = request.json.get('title', post['title'])
+    new_content = request.json.get('content', post['content'])
+
+    post['title'] = new_title
+    post['content'] = new_content
+
+    updated_post = {
+        'id': id,
+        'title': new_title,
+        'content': new_content
+    }
+
+    # Update the POSTS list with the modified post
+    for index, post in enumerate(POSTS):
+        if post['id'] == id:
+            POSTS[index] = post
+            break
+
+    return jsonify(updated_post), 200
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
